@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.lintao.eorp.dao.DealRecordDao">
+
+    <resultMap type="pers.lintao.eorp.entity.DealRecord" id="DealRecordMap">
+        <result property="recordId" column="record_id" jdbcType="INTEGER"/>
+        <result property="expensiveId" column="expensive_id" jdbcType="INTEGER"/>
+        <result property="emId" column="em_id" jdbcType="INTEGER"/>
+        <result property="dealTime" column="deal_time" jdbcType="TIMESTAMP"/>
+        <result property="dealWay" column="deal_way" jdbcType="VARCHAR"/>
+        <result property="dealResult" column="deal_result" jdbcType="VARCHAR"/>
+        <result property="comment" column="comment" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="DealRecordMap">
+        select
+          record_id, expensive_id, em_id, deal_time, deal_way, deal_result, comment
+        from deal_record
+        where record_id = #{recordId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="DealRecordMap">
+        select
+          record_id, expensive_id, em_id, deal_time, deal_way, deal_result, comment
+        from deal_record
+        <where>
+            <if test="recordId != null">
+                and record_id = #{recordId}
+            </if>
+            <if test="expensiveId != null">
+                and expensive_id = #{expensiveId}
+            </if>
+            <if test="emId != null">
+                and em_id = #{emId}
+            </if>
+            <if test="dealTime != null">
+                and deal_time = #{dealTime}
+            </if>
+            <if test="dealWay != null and dealWay != ''">
+                and deal_way = #{dealWay}
+            </if>
+            <if test="dealResult != null and dealResult != ''">
+                and deal_result = #{dealResult}
+            </if>
+            <if test="comment != null and comment != ''">
+                and comment = #{comment}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from deal_record
+        <where>
+            <if test="recordId != null">
+                and record_id = #{recordId}
+            </if>
+            <if test="expensiveId != null">
+                and expensive_id = #{expensiveId}
+            </if>
+            <if test="emId != null">
+                and em_id = #{emId}
+            </if>
+            <if test="dealTime != null">
+                and deal_time = #{dealTime}
+            </if>
+            <if test="dealWay != null and dealWay != ''">
+                and deal_way = #{dealWay}
+            </if>
+            <if test="dealResult != null and dealResult != ''">
+                and deal_result = #{dealResult}
+            </if>
+            <if test="comment != null and comment != ''">
+                and comment = #{comment}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="recordId" useGeneratedKeys="true">
+        insert into deal_record(expensive_id, em_id, deal_time, deal_way, deal_result, comment)
+        values (#{expensiveId}, #{emId}, #{dealTime}, #{dealWay}, #{dealResult}, #{comment})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="recordId" useGeneratedKeys="true">
+        insert into deal_record(expensive_id, em_id, deal_time, deal_way, deal_result, comment)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.expensiveId}, #{entity.emId}, #{entity.dealTime}, #{entity.dealWay}, #{entity.dealResult}, #{entity.comment})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="recordId" useGeneratedKeys="true">
+        insert into deal_record(expensive_id, em_id, deal_time, deal_way, deal_result, comment)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.expensiveId}, #{entity.emId}, #{entity.dealTime}, #{entity.dealWay}, #{entity.dealResult}, #{entity.comment})
+        </foreach>
+        on duplicate key update
+        expensive_id = values(expensive_id),
+        em_id = values(em_id),
+        deal_time = values(deal_time),
+        deal_way = values(deal_way),
+        deal_result = values(deal_result),
+        comment = values(comment)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update deal_record
+        <set>
+            <if test="expensiveId != null">
+                expensive_id = #{expensiveId},
+            </if>
+            <if test="emId != null">
+                em_id = #{emId},
+            </if>
+            <if test="dealTime != null">
+                deal_time = #{dealTime},
+            </if>
+            <if test="dealWay != null and dealWay != ''">
+                deal_way = #{dealWay},
+            </if>
+            <if test="dealResult != null and dealResult != ''">
+                deal_result = #{dealResult},
+            </if>
+            <if test="comment != null and comment != ''">
+                comment = #{comment},
+            </if>
+        </set>
+        where record_id = #{recordId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from deal_record where record_id = #{recordId}
+    </delete>
+
+</mapper>
+

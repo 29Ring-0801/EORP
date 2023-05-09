@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.lintao.eorp.dao.ExpenseReportDao">
+
+    <resultMap type="pers.lintao.eorp.dto.responseDTO.ExpenseReportListResponseDTO" id="ExpenseReportMap">
+        <result property="expenseId" column="expense_id" jdbcType="INTEGER"/>
+        <result property="cause" column="cause" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="totalAmount" column="total_amount" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <association property="nextDealEm" javaType="pers.lintao.eorp.entity.Employee"
+                     select="pers.lintao.eorp.dao.EmployeeDao.queryById" column="next_deal_em"/>
+    </resultMap>
+
+    <resultMap type="pers.lintao.eorp.dto.responseDTO.ExamineExpenseReportResponseDTO" id="ExamineExpenseReportMap">
+        <result property="expenseId" column="expense_id" jdbcType="INTEGER"/>
+        <result property="cause" column="cause" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="totalAmount" column="total_amount" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <association property="creator" javaType="pers.lintao.eorp.entity.Employee"
+                     select="pers.lintao.eorp.dao.EmployeeDao.queryById" column="em_id"/>
+        <association property="nextDealEm" javaType="pers.lintao.eorp.entity.Employee"
+                     select="pers.lintao.eorp.dao.EmployeeDao.queryById" column="next_deal_em"/>
+    </resultMap>
+
+    <select id="queryPageList" resultMap="ExpenseReportMap">
+        SELECT expense_id,cause,create_time,next_deal_em,total_amount,status
+        FROM expense_report ${ew.customSqlSegment}
+        order by expense_id desc
+    </select>
+
+    <select id="queryExamineList" resultMap="ExamineExpenseReportMap">
+        select
+            expense_id, cause, em_id, create_time, total_amount, status, expense_voucher,next_deal_em
+        from expense_report
+        where next_deal_em = #{nextDealEm}
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultType="pers.lintao.eorp.entity.ExpenseReport">
+        select
+          expense_id, cause, em_id, create_time, next_deal_em, total_amount, status, expense_voucher
+        from expense_report
+        where expense_id = #{expenseId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultType="pers.lintao.eorp.entity.ExpenseReport">
+        select
+          expense_id, cause, em_id, create_time, next_deal_em, total_amount, status, expense_voucher
+        from expense_report
+        <where>
+            <if test="expenseId != null">
+                and expense_id = #{expenseId}
+            </if>
+            <if test="cause != null and cause != ''">
+                and cause = #{cause}
+            </if>
+            <if test="emId != null">
+                and em_id = #{emId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="nextDealEm != null">
+                and next_deal_em = #{nextDealEm}
+            </if>
+            <if test="totalAmount != null">
+                and total_amount = #{totalAmount}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="expenseVoucher != null and expenseVoucher != ''">
+                and expense_voucher = #{expenseVoucher}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from expense_report
+        <where>
+            <if test="expenseId != null">
+                and expense_id = #{expenseId}
+            </if>
+            <if test="cause != null and cause != ''">
+                and cause = #{cause}
+            </if>
+            <if test="emId != null">
+                and em_id = #{emId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="nextDealEm != null">
+                and next_deal_em = #{nextDealEm}
+            </if>
+            <if test="totalAmount != null">
+                and total_amount = #{totalAmount}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="expenseVoucher != null and expenseVoucher != ''">
+                and expense_voucher = #{expenseVoucher}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="expenseId" useGeneratedKeys="true">
+        insert into expense_report(cause, em_id, create_time, next_deal_em, total_amount, status, expense_voucher)
+        values (#{cause}, #{emId}, #{createTime}, #{nextDealEm}, #{totalAmount}, #{status}, #{expenseVoucher})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="expenseId" useGeneratedKeys="true">
+        insert into expense_report(cause, em_id, create_time, next_deal_em, total_amount, status, expense_voucher)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.cause}, #{entity.emId}, #{entity.createTime}, #{entity.nextDealEm}, #{entity.totalAmount}, #{entity.status}, #{entity.expenseVoucher})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="expenseId" useGeneratedKeys="true">
+        insert into expense_report(cause, em_id, create_time, next_deal_em, total_amount, status, expense_voucher)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.cause}, #{entity.emId}, #{entity.createTime}, #{entity.nextDealEm}, #{entity.totalAmount}, #{entity.status}, #{entity.expenseVoucher})
+        </foreach>
+        on duplicate key update
+        cause = values(cause),
+        em_id = values(em_id),
+        create_time = values(create_time),
+        next_deal_em = values(next_deal_em),
+        total_amount = values(total_amount),
+        status = values(status),
+        expense_voucher = values(expense_voucher)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update expense_report
+        <set>
+            <if test="cause != null and cause != ''">
+                cause = #{cause},
+            </if>
+            <if test="emId != null">
+                em_id = #{emId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="nextDealEm != null">
+                next_deal_em = #{nextDealEm},
+            </if>
+            <if test="totalAmount != null">
+                total_amount = #{totalAmount},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="expenseVoucher != null and expenseVoucher != ''">
+                expense_voucher = #{expenseVoucher},
+            </if>
+        </set>
+        where expense_id = #{expenseId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from expense_report where expense_id = #{expenseId}
+    </delete>
+
+    <update id="modifyStatus" parameterType="pers.lintao.eorp.dto.requestDTO.ToggleExpenseReportRequestDTO">
+        update expense_report
+        set status = #{status}
+        where expense_id = #{expenseId}
+    </update>
+
+
+</mapper>
+

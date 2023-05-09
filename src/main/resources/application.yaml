@@ -1,0 +1,37 @@
+# 开启调试模式
+#debug: true
+# 配置服务器默认端口
+#server:
+#  port: 8181
+# 配置默认数据源HikariDataSource
+spring:
+  datasource:
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ssm_project?useUnicode=true&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&useSSL=false
+  freemarker:
+    template-loader-path: classpath:/templates/
+    suffix: .ftl
+    charset: utf-8
+    cache: false
+    content-type: text/html
+    check-template-location: true
+  mvc:
+    static-path-pattern: /static/**
+  servlet:
+    multipart:
+      max-file-size: 10MB
+#  messages:
+mybatis-plus:
+  # mapper文件路径
+  mapper-locations: classpath:/mapper/*.xml
+  configuration:
+    # 控制台打印SQL
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  level:
+    root: info
+
+#    basename: i18n/message

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.lintao.eorp.dao.PositionDao">
+
+    <resultMap type="pers.lintao.eorp.entity.Position" id="PositionMap">
+        <result property="positionId" column="position_id" jdbcType="INTEGER"/>
+        <result property="positionName" column="position_name" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="PositionMap">
+        select
+          position_id, position_name, create_time, status
+        from ssm_project.position
+        where position_id = #{positionId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="PositionMap">
+        select
+          position_id, position_name, create_time, status
+        from ssm_project.position
+        <where>
+            <if test="positionId != null">
+                and position_id = #{positionId}
+            </if>
+            <if test="positionName != null and positionName != ''">
+                and position_name = #{positionName}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from ssm_project.position
+        <where>
+            <if test="positionId != null">
+                and position_id = #{positionId}
+            </if>
+            <if test="positionName != null and positionName != ''">
+                and position_name = #{positionName}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!--新增列-->
+    <insert id="insert" keyProperty="positionId" useGeneratedKeys="true">
+        insert into ssm_project.position(position_name, create_time, status)
+        values(#{positionName}, #{createTime}, #{status})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="positionId" useGeneratedKeys="true">
+        insert into ssm_project.position(position_name, create_time, status)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.positionName}, #{entity.createTime}, #{entity.status})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="positionId" useGeneratedKeys="true">
+        insert into ssm_project.position(position_name, create_time, status)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.positionName}, #{entity.createTime}, #{entity.status})
+        </foreach>
+        on duplicate key update
+        position_name = values(position_name),
+        create_time = values(create_time),
+        status = values(status)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update ssm_project.position
+        <set>
+            <if test="positionName != null and positionName != ''">
+                position_name = #{positionName},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where position_id = #{positionId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from ssm_project.position where position_id = #{positionId}
+    </delete>
+
+    <select id="queryPageList" resultType="pers.lintao.eorp.dto.responseDTO.PositiontListResponseDTO">
+        select position_id, position_name, create_time, status
+        from ssm_project.position ${ew.customSqlSegment}
+    </select>
+
+    <!--将职位状态改为禁用-->
+    <update id="updateFailureStatusById">
+        UPDATE ssm_project.position set status = 0 where position_id = #{positionId}
+    </update>
+    <!--将职位状态改为可用-->
+    <update id="updateSuccessStatusById">
+        UPDATE ssm_project.position set status = 1 where position_id = #{positionId}
+    </update>
+
+    <select id="queryActivePositionList"
+            resultType="pers.lintao.eorp.dto.responseDTO.ActivePositionListResponseDTO">
+        SELECT position_id,position_name
+        FROM ssm_project.position WHERE status = 1
+    </select>
+</mapper>
+

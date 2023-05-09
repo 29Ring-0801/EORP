@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.lintao.eorp.dao.ExpenseReportDetailDao">
+
+    <resultMap type="pers.lintao.eorp.entity.ExpenseReportDetail" id="ExpenseReportDetailMap">
+        <result property="expensiveDetailId" column="expensive_detail_id" jdbcType="INTEGER"/>
+        <result property="expensiveId" column="expensive_id" jdbcType="INTEGER"/>
+        <result property="item" column="item" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="VARCHAR"/>
+        <result property="comment" column="comment" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ExpenseReportDetailMap">
+        select
+          expensive_detail_id, expensive_id, item, amount, comment
+        from expense_report_detail
+        where expensive_detail_id = #{expensiveDetailId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ExpenseReportDetailMap">
+        select
+          expensive_detail_id, expensive_id, item, amount, comment
+        from expense_report_detail
+        <where>
+            <if test="expensiveDetailId != null">
+                and expensive_detail_id = #{expensiveDetailId}
+            </if>
+            <if test="expensiveId != null">
+                and expensive_id = #{expensiveId}
+            </if>
+            <if test="item != null and item != ''">
+                and item = #{item}
+            </if>
+            <if test="amount != null">
+                and amount = #{amount}
+            </if>
+            <if test="comment != null and comment != ''">
+                and comment = #{comment}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from expense_report_detail
+        <where>
+            <if test="expensiveDetailId != null">
+                and expensive_detail_id = #{expensiveDetailId}
+            </if>
+            <if test="expensiveId != null">
+                and expensive_id = #{expensiveId}
+            </if>
+            <if test="item != null and item != ''">
+                and item = #{item}
+            </if>
+            <if test="amount != null">
+                and amount = #{amount}
+            </if>
+            <if test="comment != null and comment != ''">
+                and comment = #{comment}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="expensiveDetailId" useGeneratedKeys="true">
+        insert into expense_report_detail(expensive_id, item, amount, comment)
+        values (#{expensiveId}, #{item}, #{amount}, #{comment})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="expensiveDetailId" useGeneratedKeys="true">
+        insert into expense_report_detail(expensive_id, item, amount, comment)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.expensiveId}, #{entity.item}, #{entity.amount}, #{entity.comment})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="expensiveDetailId" useGeneratedKeys="true">
+        insert into expense_report_detail(expensive_id, item, amount, comment)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.expensiveId}, #{entity.item}, #{entity.amount}, #{entity.comment})
+        </foreach>
+        on duplicate key update
+        expensive_id = values(expensive_id),
+        item = values(item),
+        amount = values(amount),
+        comment = values(comment)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update expense_report_detail
+        <set>
+            <if test="expensiveId != null">
+                expensive_id = #{expensiveId},
+            </if>
+            <if test="item != null and item != ''">
+                item = #{item},
+            </if>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+            <if test="comment != null and comment != ''">
+                comment = #{comment},
+            </if>
+        </set>
+        where expensive_detail_id = #{expensiveDetailId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from expense_report_detail where expensive_detail_id = #{expensiveDetailId}
+    </delete>
+
+
+    <!--  根据报销单id查询报销单详情  -->
+    <select id="queryByExpenseId" resultType="pers.lintao.eorp.entity.ExpenseReportDetail" >
+        select
+            expensive_detail_id, expensive_id, item, amount, comment
+        from expense_report_detail
+        where expensive_id = #{expenseId}
+    </select>
+
+    <!--根据报销单id删除-->
+    <delete id="deleteByExpenseId">
+        delete from expense_report_detail where expensive_id = #{expenseId}
+    </delete>
+
+</mapper>
+

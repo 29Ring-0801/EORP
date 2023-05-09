@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.lintao.eorp.dao.EmployeeDao">
+
+    <resultMap type="pers.lintao.eorp.entity.Employee" id="EmployeeMap">
+        <result property="emId" column="em_id" jdbcType="INTEGER"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="loginName" column="login_name" jdbcType="VARCHAR"/>
+        <result property="depId" column="dep_id" jdbcType="INTEGER"/>
+        <result property="positionId" column="position_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap type="pers.lintao.eorp.dto.EmployeeDTO" id="UserInfoMap">
+        <id property="emId" column="em_id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="loginName" column="login_name" jdbcType="VARCHAR"/>
+        <result property="depId" column="dep_id" jdbcType="INTEGER"/>
+        <result property="positionId" column="position_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <association property="department" column="dep_id" javaType="pers.lintao.eorp.entity.Department"
+                     select="pers.lintao.eorp.dao.DepartmentDao.queryById"/>
+        <association property="position" column="position_id" javaType="pers.lintao.eorp.entity.Position"
+                     select="pers.lintao.eorp.dao.PositionDao.queryById"/>
+    </resultMap>
+
+
+    <select id="getEmInfoByUserNamePassword" resultMap="UserInfoMap">
+        SELECT em_id,name,login_name,dep_id,position_id,status
+        FROM employee
+        where login_name=#{loginName} AND password = #{password}
+    </select>
+
+    <select id="queryPageList" resultMap="UserInfoMap">
+        SELECT em_id,name,login_name,dep_id,position_id,status
+        FROM employee ${ew.customSqlSegment}
+    </select>
+    <select id="getEmployLeadByDepId" resultMap="UserInfoMap">
+        SELECT em_id,name,login_name,dep_id,position_id,status
+        FROM employee
+        where position_id = 2 AND dep_id=#{depId}
+    </select>
+    <select id="queryById" resultType="pers.lintao.eorp.entity.Employee">
+        select * from employee WHERE em_id = #{emId}
+    </select>
+
+    <select id="queryAvailableEmployeeByPositionId" resultMap="UserInfoMap">
+        SELECT em_id,name,login_name
+        FROM employee
+        where status = 1 AND position_id=#{positionId}
+    </select>
+    <select id="queryByIdAndPwd" parameterType="pers.lintao.eorp.dto.requestDTO.EmployeeModifyPwdRequestDTO" resultType="java.lang.Integer">
+        select count(*)
+        from employee
+        where em_id = #{emId} and password = #{oldpwd}
+    </select>
+
+    <update id="updateFailureStatusById">
+        UPDATE employee
+        SET status = 0
+        WHERE em_id = #{emId}
+    </update>
+
+    <update id="updateSuccessStatusById">
+        UPDATE employee
+        SET status = 1
+        WHERE em_id = #{emId}
+    </update>
+
+    <!--通过主键修改数据-->
+    <update id="updateById" parameterType="pers.lintao.eorp.entity.Employee">
+        update employee
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="loginName != null and loginName != ''">
+                login_name = #{loginName},
+            </if>
+            <if test="depId != null and depId != ''">
+                dep_id = #{depId},
+            </if>
+            <if test="positionId != null and positionId != ''">
+                position_id = #{positionId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where em_id = #{emId}
+    </update>
+
+    <update id="modifyPwd" parameterType="pers.lintao.eorp.dto.requestDTO.EmployeeModifyPwdRequestDTO">
+        update employee
+        set password = #{confirmpwd}
+        where em_id = #{emId} and password = #{oldpwd}
+    </update>
+
+</mapper>
+
